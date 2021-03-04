@@ -62,7 +62,7 @@ router.get('/list/:id', function (req, res) {
         } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
-            res.status(500).json({ error: 'something is wrong' })
+            res.status(500).json({ error: 'khong ton tai id' })
             res.end()
         }
     }).catch((error) => {
@@ -156,7 +156,7 @@ router.post('/update', function (req, res) {
         } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
-            res.status(404).json({ error: 'id not exist' })
+            res.status(404).json({ error: 'khong ton tai id' })
             res.end()
         }
     })
@@ -194,8 +194,8 @@ router.post('/cancel/:id', function (req, res) {
                     console.log(`statusCode: ${resp.statusCode}`)
                     admin.firestore().collection("alarms").doc(id).delete().then(() => {
                         console.log("Document successfully deleted!");
-                        res.end(JSON.stringify({ alarm_id: Number(id) }))
-
+                        res.json({ alarm_id: Number(id) })
+                        res.end()
                     }).catch((error) => {
                         res.status(500).json({ error: ' khong the xoa firestore' })
                         res.end()
@@ -210,7 +210,7 @@ router.post('/cancel/:id', function (req, res) {
 
         } else {
             // doc.data() will be undefined in this case
-            res.status(404).json({ error: 'id not exist' })
+            res.status(404).json({ error: 'khong ton tai' })
             res.end()
         }
     })
@@ -282,14 +282,14 @@ router.post('/new', function (req, res) {
                 })
                 .catch(error => {
                     console.error(error)
-                    res.status(500).json({ error: 'something is wrong' })
+                    res.status(500).json({ error: 'khong the gui den mobile' })
                     res.end()
                 })
 
         })
         .catch((error) => {
             console.error("Error writing document: ", error);
-            res.status(500).json({ error: 'something is wrong' })
+            res.status(500).json({ error: 'khong the luu firestore' })
             res.end()
         });
 
