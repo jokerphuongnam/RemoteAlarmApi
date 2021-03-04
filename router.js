@@ -155,7 +155,7 @@ router.post('/update', function (req, res) {
 });
 
 ///////////////////////////////////////////////////////////////mapping cancel alarm
-router.get('/cancel/:id', function (req, res) {
+router.post('/cancel/:id', function (req, res) {
     // tuong tu o tren, chuan bi data gui thong bao den mobile
     // roi cap nhat database tren firebase
     res.setHeader('Content-Type', 'application/json');
