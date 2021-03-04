@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "remotealarmclock-2f98a",
+  "private_key_id": "eee72679cd11a14a8aff2aa02015ed46f1ee61f8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCmBpfkg/FowXza\nFi1yka5FlMW7fTj/uxKLdnwJcRSlvpwOxMmT96r9b6zLiv0S9fsZT6A+Oq1N+7sQ\nIsglRIWlr8oHt89oMy0PxH3xhVjvQY3WgsOlvWKr95nVTeUMnVuFHqmGVY5fNavw\n5i1nETXxqOWKZzXqM3yYmHuxld0ivSR3A20Kj0eKL2PAPVgI9VHr6q1drJ4MvIRF\nf/v0xtxuXvjX+6lBL/bujvGpVtUE/XNGrMdOE/m/vyFulRDo4vol80Lch3qGynq/\naxUEmQ2COuF2g5hjsb5Lb4LG3Oz2vUQv/wTYNV7f/eKUcN7UFZZnGIiigmwaNtzR\n5ETPmbqFAgMBAAECggEAEalSj9jyswh05fpFUWe/7d+lUow/+6xZ4ljIrx8cFC79\nCPEphG0XVSiDwuSr2/rWKwYhGh2XLAbjCmoOIoYcitidbvQVwz7rxJP21dzamMZq\nIUSogsFtIAq8jvK0sq0r/DLxKRIsOA1Ml4QqQPRAFHoOw7S2Xo3663y6bn9ua8XJ\nPPC0kTDDDvjvaSDsHyiu4o4Cx4TMIXhtvqKpvxwYrDjyHChzmt0vymRtDTaLY/+m\nFPN1cW16JKcS1sFxjBoOHcl7Qzr60ZuQGe02HUyl5lW7FCL0V+pHIgZPDtFeUC7L\nY+N9f28KP4WPToGzHJcDHhUzunY9stVNt0yCoM/VTQKBgQDY6GBW4D97zODvSw/E\nVTqM3hUvvgfGavrqufLpbtX3nQDTNz2/tJqxdIyJ5L8TOit/dhkDoEI8szweFw6N\nENCop+0/DIC7NdHSt2b+6HzXnkh/1vma4bDxcU1x8Z7V/mYyEpPs2zzWqJUBkqtQ\n6iXIeIzF3JQsao58xia0ttmjXwKBgQDD8qPdEcVHVjJf3h+8jmeY4iDwK7WyjAi+\nPQQwwI1OBXaKl42u3wPZIZRdDxaQ35or8y8yuX/LiUpyNL2+O76QaWnwyjpZdTAQ\nvStD4YakdIPWunQfzAII4NYssufnJw5q3d9fNzOKaUhWykmW1qEykNY8bUPcn/2L\nqM7vJA4wmwKBgEKuNSef6oQxeJi3l5JArS4u+45gud0qeBZ+sYlHdGmZj25fFhGA\nAOo6rRWbB45unH6jnI77zkEAzKNnbSa6m5qtfQab3lsu8WD41qXYbMCQPTNnr/YI\nGbAvp6I2qCCbA2mzQlxXDX3j92KzZw0J3jGhtY0CAV8iJsl+1NlLON67AoGAY0FM\nSdYPlTQPbkpIzy1fQq0AvEeX0Spn311u+vb+XNAdnNRp+3OSMnF1ArJ63sW1BaA4\nfzxBhKs1n6YhmvQOcn5DIKp/ZgMbZs871DWwCyvOAH4QBm9DdJXXR2sUVx2Miwt6\nc3O10t3Du9rZ7eMoYkHFk3RRlLciKpVGxRIBchMCgYBjNm6gTZeB84c5koosF3w0\no9d1zI4T+yTgosStMYPDYpmDCFG7eKaV4kvr7YjjIHO5Jc11QfzYMj0vUId7dQhO\naMg5aOdUVQPsoY5kim8KxgqFavxGzlbsoRv9GlPwg0d0yG1q4+nEGgJoli0AYObY\nHAK2etpwS0fKfRWVHWwckA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-so1vb@remotealarmclock-2f98a.iam.gserviceaccount.com",
+  "client_id": "101432607722553247277",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-so1vb%40remotealarmclock-2f98a.iam.gserviceaccount.com"
+}
