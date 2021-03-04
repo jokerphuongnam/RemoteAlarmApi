@@ -78,7 +78,7 @@ router.get('/list/:id', function (req, res) {
 ///////////////////////////////////////////////////////////////mapping update alarm
 router.post('/update', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
-    var isError = false
+
     let data = req.body // lay data gui len tu form 
     var time = data.time.toString()  // name cua input la time <input name="time" >
     let hour = parseInt(time.substring(0, 2)) // cat chuoi lay gio
@@ -111,45 +111,60 @@ router.post('/update', function (req, res) {
         },
         "priority": "high"
     }
-    axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
-        .then(res => {
-            console.log(`statusCode: ${res.statusCode}`)
-            //console.log(res)
-        })
-        .catch(error => {
-            console.error(error)
-            isError = true
-        })
+    // check exist
 
-    // cap nhat data len firebase
-    admin.firestore().collection("alarms").doc(id.toString()).update({
-        alarmId: parseInt(id),
-        hour: hour,
-        minute: minute,
-        started: true,
-        title: title,
-        monday: monday,
-        tuesday: tuesday,
-        wednesday: wednesday,
-        thursday: thursday,
-        friday: friday,
-        saturday: saturday,
-        sunday: sunday,
-        recurring: recurring
-    }).catch((error) => {
-        // The document probably doesn't exist.
-        console.error("Error updating document: ", error);
-        isError = true
-    });
+    admin.firestore().collection("alarms").doc(id).get().then((doc) => {
+        if (doc.exists) {
+            console.log("Document data:", doc.data());
+            axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
+                .then(resp => {
+                    console.log(`statusCode: ${resp.statusCode}`)
+                    // cap nhat data len firebase
+                    admin.firestore().collection("alarms").doc(id.toString()).update({
+                        alarmId: parseInt(id),
+                        hour: hour,
+                        minute: minute,
+                        started: true,
+                        title: title,
+                        monday: monday,
+                        tuesday: tuesday,
+                        wednesday: wednesday,
+                        thursday: thursday,
+                        friday: friday,
+                        saturday: saturday,
+                        sunday: sunday,
+                        recurring: recurring
+                    }).then(() => {
+                        console.log("Document successfully updated!");
+                        res.json({ alarm_id: Number(data.aid) })
+                        res.end()
+                    }).catch((error) => {
+                        // The document probably doesn't exist.
+                        res.status(500).json({ error: 'khong cap nhat firestore' })
+                        res.end()
+                    });
 
-    if (isError) {
-        res.status(500).json({ error: 'something is wrong' })
-        res.end()
+                })
+                .catch(error => {
+                    console.error(error)
+                    res.status(500).json({ error: 'khong the gui den mobile' })
+                    res.end()
 
-    } else {
-        res.end(JSON.stringify({ alarm_id: id }))
+                })
 
-    }
+
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+            res.status(404).json({ error: 'id not exist' })
+            res.end()
+        }
+    })
+
+    var isError = true
+
+
+
 
 
 });
@@ -159,7 +174,7 @@ router.post('/cancel/:id', function (req, res) {
     // tuong tu o tren, chuan bi data gui thong bao den mobile
     // roi cap nhat database tren firebase
     res.setHeader('Content-Type', 'application/json');
-    var isError = false
+
     let id = req.params.id
     let json = {
         "to": "/topics/remoteAlarm",
@@ -169,32 +184,36 @@ router.post('/cancel/:id', function (req, res) {
         },
         "priority": "high"
     }
-    axios.post('https://fcm.googleapis.com/fcm/send', json, config)
-        .then(res => {
-            console.log(`statusCode: ${res.statusCode}`)
-        })
-        .catch(error => {
-            console.error(error)
-            isError = true
-        })
 
-    admin.firestore().collection("alarms").doc(id).delete().then(() => {
-        console.log("Document successfully deleted!");
+    admin.firestore().collection("alarms").doc(id).get().then((doc) => {
+        if (doc.exists) {
+            console.log("Document data:", doc.data());
 
-    }).catch((error) => {
-        console.error("Error removing document: ", error);
-        isError = true
-    });
+            axios.post('https://fcm.googleapis.com/fcm/send', json, config)
+                .then(resp => {
+                    console.log(`statusCode: ${resp.statusCode}`)
+                    admin.firestore().collection("alarms").doc(id).delete().then(() => {
+                        console.log("Document successfully deleted!");
+                        res.end(JSON.stringify({ alarm_id: Number(id) }))
 
-    if (isError) {
-        res.status(500).json({ error: 'something is wrong' })
-        res.end()
+                    }).catch((error) => {
+                        res.status(500).json({ error: ' khong the xoa firestore' })
+                        res.end()
+                    });
 
-    } else {
-        res.end(JSON.stringify({ alarm_id: id }))
+                })
+                .catch(error => {
+                    res.status(500).json({ error: 'khong the gui den mobile' })
+                    res.end()
+                })
 
-    }
 
+        } else {
+            // doc.data() will be undefined in this case
+            res.status(404).json({ error: 'id not exist' })
+            res.end()
+        }
+    })
 
 });
 
@@ -205,7 +224,6 @@ router.post('/new', function (req, res) {
     console.log(id)
     let data = req.body
     var time = data.time.toString()
-    var isError = false
     // chuan bi cac checkbox
     // recurring
     // console.log('checkbox test' + data.onoffswitch)
@@ -248,36 +266,33 @@ router.post('/new', function (req, res) {
         },
         "priority": "high"
     }
-    axios.post('https://fcm.googleapis.com/fcm/send', json, config) // gui den mobile http post
-        .then(res => {
-            console.log(`statusCode: ${res.statusCode}`)
-            //console.log(res)
-        })
-        .catch(error => {
-            console.error(error)
-            isError = true
 
-        })
 
     // cap nhat firestore
     admin.firestore().collection("alarms").doc(id.toString())
         .withConverter(Converter)
         .set(new Alarm(id, hour, minute, title, true, monday, tuesday, wednesday, thursday, friday, saturday, sunday, recurring)).then(() => {
             console.log("Document successfully written!");
+            axios.post('https://fcm.googleapis.com/fcm/send', json, config) // gui den mobile http post
+                .then(resp => {
+                    console.log(`statusCode: ${resp.statusCode}`)
+                   // res.end(JSON.stringify({ alarm_id: Number(id) }))
+                   res.json({  alarm_id: Number(id) })
+                   res.end()
+                })
+                .catch(error => {
+                    console.error(error)
+                    res.status(500).json({ error: 'something is wrong' })
+                    res.end()
+                })
 
         })
         .catch((error) => {
             console.error("Error writing document: ", error);
-            isError = true
+            res.status(500).json({ error: 'something is wrong' })
+            res.end()
         });
 
-    if (isError) {
-        res.status(500).json({ error: 'something is wrong' })
-        res.end()
-    } else {
-        res.end(JSON.stringify({ alarm_id: id }))
-
-    }
 
 });
 
