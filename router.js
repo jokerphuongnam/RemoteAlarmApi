@@ -27,10 +27,11 @@ let config = {
 }
 
 
-///////////////////////////////////////////////////////////////get list alarm
+///////////////////////////////////////////////////////////////get list alarm full with userid
 router.get('/list', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
-    admin.firestore().collection("alarms").get().then((querySnapshot) => {
+    let uid = req.query.uid
+    admin.firestore().collection("user").doc(uid).collection("alarms").get().then((querySnapshot) => {
         var arr = []
         querySnapshot.forEach((doc) => {
             // doc.data() is never undefined for query doc snapshots
@@ -51,11 +52,12 @@ router.get('/list', function (req, res) {
 });
 
 
-///////////////////////////////////////////////////////////////get a alarm with id
-router.get('/list/:id', function (req, res) {
-    let id = req.params.id
+///////////////////////////////////////////////////////////////get a alarm with id + userid
+router.get('/alarmDetail', function (req, res) {
+    let uid = req.query.uid
+    let aid = req.query.aid
     res.setHeader('Content-Type', 'application/json');
-    admin.firestore().collection("alarms").doc(id).get().then((doc) => {
+    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
         if (doc.exists) {
             console.log("Document data:", doc.data());
             res.end(JSON.stringify(doc.data()))
@@ -80,6 +82,8 @@ router.post('/update', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
 
     let data = req.body // lay data gui len tu form 
+    let uid = data.uid
+    let aid = data.aid
     var time = data.time.toString()  // name cua input la time <input name="time" >
     let hour = parseInt(time.substring(0, 2)) // cat chuoi lay gio
     let minute = parseInt(time.substring(3, 5))
@@ -99,11 +103,11 @@ router.post('/update', function (req, res) {
         console.log('thu 2 true')
     }
     // khoi tao data gui thong bao den mobile
-    let id = data.aid
+    
     let json = {
         "to": "/topics/remoteAlarm",
         "data": {
-            "alarmId": id.toString(),
+            "alarmId": aid.toString(),
             "type": "update",
             "hour": hour.toString(),
             "minute": minute.toString(),
@@ -113,15 +117,15 @@ router.post('/update', function (req, res) {
     }
     // check exist
 
-    admin.firestore().collection("alarms").doc(id).get().then((doc) => {
+    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
         if (doc.exists) {
             console.log("Document data:", doc.data());
             axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
                 .then(resp => {
                     console.log(`statusCode: ${resp.statusCode}`)
                     // cap nhat data len firebase
-                    admin.firestore().collection("alarms").doc(id.toString()).update({
-                        alarmId: parseInt(id),
+                    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).update({
+                        alarmId: parseInt(aid),
                         hour: hour,
                         minute: minute,
                         started: true,
@@ -136,7 +140,7 @@ router.post('/update', function (req, res) {
                         recurring: recurring
                     }).then(() => {
                         console.log("Document successfully updated!");
-                        res.json({ alarm_id: Number(data.aid) })
+                        res.json({ alarm_id: Number(aid) })
                         res.end()
                     }).catch((error) => {
                         // The document probably doesn't exist.
@@ -170,31 +174,32 @@ router.post('/update', function (req, res) {
 });
 
 ///////////////////////////////////////////////////////////////mapping cancel alarm
-router.post('/cancel/:id', function (req, res) {
+router.post('/cancel', function (req, res) {
     // tuong tu o tren, chuan bi data gui thong bao den mobile
     // roi cap nhat database tren firebase
     res.setHeader('Content-Type', 'application/json');
 
-    let id = req.params.id
+    let aid = req.query.aid
+    let uid = req.query.uid
     let json = {
         "to": "/topics/remoteAlarm",
         "data": {
-            "alarmId": id,
+            "alarmId": aid,
             "type": "cancel"
         },
         "priority": "high"
     }
 
-    admin.firestore().collection("alarms").doc(id).get().then((doc) => {
+    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
         if (doc.exists) {
             console.log("Document data:", doc.data());
 
             axios.post('https://fcm.googleapis.com/fcm/send', json, config)
                 .then(resp => {
                     console.log(`statusCode: ${resp.statusCode}`)
-                    admin.firestore().collection("alarms").doc(id).delete().then(() => {
+                    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).delete().then(() => {
                         console.log("Document successfully deleted!");
-                        res.json({ alarm_id: Number(id) })
+                        res.json({ alarm_id: Number(aid) })
                         res.end()
                     }).catch((error) => {
                         res.status(500).json({ error: ' khong the xoa firestore' })
@@ -220,9 +225,11 @@ router.post('/cancel/:id', function (req, res) {
 ////////////////////////////////////////////////////////////////mapping new alarm
 router.post('/new', function (req, res) {
     // chuan bi data
-    var id = Math.floor(100000000 + Math.random() * 900000000);
-    console.log(id)
+    var aid = Math.floor(100000000 + Math.random() * 900000000);
+    console.log(aid)
     let data = req.body
+    let uid = data.uid
+    console.log(uid)
     var time = data.time.toString()
     // chuan bi cac checkbox
     // recurring
@@ -239,18 +246,10 @@ router.post('/new', function (req, res) {
     let friday = (data.friday_cb == "false" ? false : true)
     let saturday = (data.saturday_cb == "false" ? false : true)
     let sunday = (data.sunday_cb == "false" ? false : true)
-    // console.log(data.monday_cb)
-    // console.log(data.tuesday_cb)
-    // console.log(data.wednesday_cb)
-    // console.log(data.thursday_cb)
-    // console.log(data.friday_cb)
-    // console.log(data.saturday_cb)
-    // console.log(data.sunday_cb)
 
     // khong can gui  thong bao ve user nhung checkbox
 
     // chi can gui len firestore cho demo
-
 
     let hour = parseInt(time.substring(0, 2))
     let minute = parseInt(time.substring(3, 5))
@@ -258,7 +257,7 @@ router.post('/new', function (req, res) {
     let json = {
         "to": "/topics/remoteAlarm",
         "data": {
-            "alarmId": id.toString(),
+            "alarmId": aid.toString(),
             "type": "insert",
             "hour": hour.toString(),
             "minute": minute.toString(),
@@ -269,15 +268,15 @@ router.post('/new', function (req, res) {
 
 
     // cap nhat firestore
-    admin.firestore().collection("alarms").doc(id.toString())
+    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid.toString())
         .withConverter(Converter)
-        .set(new Alarm(id, hour, minute, title, true, monday, tuesday, wednesday, thursday, friday, saturday, sunday, recurring)).then(() => {
+        .set(new Alarm(aid, hour, minute, title, true, monday, tuesday, wednesday, thursday, friday, saturday, sunday, recurring)).then(() => {
             console.log("Document successfully written!");
             axios.post('https://fcm.googleapis.com/fcm/send', json, config) // gui den mobile http post
                 .then(resp => {
                     console.log(`statusCode: ${resp.statusCode}`)
                    // res.end(JSON.stringify({ alarm_id: Number(id) }))
-                   res.json({  alarm_id: Number(id) })
+                   res.json({  alarm_id: Number(aid) })
                    res.end()
                 })
                 .catch(error => {
