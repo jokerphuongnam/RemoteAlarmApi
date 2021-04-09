@@ -96,80 +96,89 @@ router.post('/update', function (req, res) {
     let friday = (data.friday_cb == "false" ? false : true)
     let saturday = (data.saturday_cb == "false" ? false : true)
     let sunday = (data.sunday_cb == "false" ? false : true)
-    if (data.monday_cb == undefined) {
-        console.log('thu 2 false')
 
-    } else {
-        console.log('thu 2 true')
-    }
-    // khoi tao data gui thong bao den mobile
-    
-    let json = {
-        "to": "/topics/remoteAlarm",
-        "data": {
-            "alarmId": aid.toString(),
-            "type": "update",
-            "hour": hour.toString(),
-            "minute": minute.toString(),
-            "title": title
-        },
-        "priority": "high"
-    }
     // check exist
+    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((alarm) => {
+        if (alarm.exists) {
+            // console.log("Document data:", alarm.data()); // in log alarm
+            // truy van device token
+            var docRef = admin.firestore().collection("user").doc(uid);
+            docRef.get().then((user) => {
+                if (user.data().deviceToken != undefined) { // token ton tai
+                    // khoi tao data gui thong bao den mobile
 
-    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
-        if (doc.exists) {
-            console.log("Document data:", doc.data());
-            axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
-                .then(resp => {
-                    console.log(`statusCode: ${resp.statusCode}`)
-                    // cap nhat data len firebase
-                    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).update({
-                        alarmId: parseInt(aid),
-                        hour: hour,
-                        minute: minute,
-                        started: true,
-                        title: title,
-                        monday: monday,
-                        tuesday: tuesday,
-                        wednesday: wednesday,
-                        thursday: thursday,
-                        friday: friday,
-                        saturday: saturday,
-                        sunday: sunday,
-                        recurring: recurring
-                    }).then(() => {
-                        console.log("Document successfully updated!");
-                        res.json({ alarm_id: Number(aid) })
-                        res.end()
-                    }).catch((error) => {
-                        // The document probably doesn't exist.
-                        res.status(500).json({ error: 'khong cap nhat firestore' })
-                        res.end()
-                    });
+                    let json = {
+                        "token": user.data().deviceToken,
+                        "data": {
+                            "alarmId": aid.toString(),
+                            "type": "update",
+                            "hour": hour.toString(),
+                            "minute": minute.toString(),
+                            "title": title
+                        }
+                    }
+                    // axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
+                    //     .then(resp => {
+                    //         console.log(`statusCode: ${resp.statusCode}`)
+                    //         // cap nhat data len firebase
+                          
 
-                })
-                .catch(error => {
-                    console.error(error)
-                    res.status(500).json({ error: 'khong the gui den mobile' })
+                    //     })
+                    //     .catch(error => {
+                    
+
+                    //     })
+
+                    admin.messaging().send(json)
+                        .then((response) => {
+                            // Response is a message ID string.
+                            console.log('Successfully sent message:', response);
+                            admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).update({
+                                alarmId: parseInt(aid),
+                                hour: hour,
+                                minute: minute,
+                                started: true,
+                                title: title,
+                                monday: monday,
+                                tuesday: tuesday,
+                                wednesday: wednesday,
+                                thursday: thursday,
+                                friday: friday,
+                                saturday: saturday,
+                                sunday: sunday,
+                                recurring: recurring
+                            }).then(() => {
+                                console.log("Document successfully updated!");
+                                res.json({ alarm_id: Number(aid) })
+                                res.end()
+                            }).catch((error) => {
+                                // The document probably doesn't exist.
+                                res.status(500).json({ error: 'khong cap nhat firestore' })
+                                res.end()
+                            });
+                        })
+                        .catch((error) => {
+                            console.error(error)
+                            res.status(500).json({ error: 'khong the gui den mobile' })
+                            res.end()
+                        });
+                } else { // token chua co thi khong lam gi
+                    res.json({ message: "Chua lien ket mobile token" })
                     res.end()
+                }
+            }).catch((error) => {
+                console.log("loi truy van user", error);
+                res.status(500).json({ error: 'khong truy van user' })
+                res.end()
+            });
 
-                })
-
-
-        } else {
+        } else { // neu alarm khong ton tai
             // doc.data() will be undefined in this case
             console.log("No such document!");
             res.status(404).json({ error: 'khong ton tai id' })
             res.end()
         }
     })
-
-    var isError = true
-
-
-
-
 
 });
 
@@ -275,9 +284,9 @@ router.post('/new', function (req, res) {
             axios.post('https://fcm.googleapis.com/fcm/send', json, config) // gui den mobile http post
                 .then(resp => {
                     console.log(`statusCode: ${resp.statusCode}`)
-                   // res.end(JSON.stringify({ alarm_id: Number(id) }))
-                   res.json({  alarm_id: Number(aid) })
-                   res.end()
+                    // res.end(JSON.stringify({ alarm_id: Number(id) }))
+                    res.json({ alarm_id: Number(aid) })
+                    res.end()
                 })
                 .catch(error => {
                     console.error(error)
@@ -294,5 +303,31 @@ router.post('/new', function (req, res) {
 
 
 });
+
+////////////////////////////////////////////////////////////////mapping new alarm
+router.post('/updateToken', function (req, res) {
+    // chuan bi data
+    let data = req.body
+    let uid = data.uid
+    let token = data.token
+    console.log(uid)
+    console.log(token)
+
+    // cap nhat firestore
+    admin.firestore().collection("user").doc(uid).set({
+        deviceToken: token
+    }, { merge: true }).then(() => {
+        console.log("Document successfully written!");
+        res.json({ deviceToken: token })
+        res.end()
+    })
+        .catch((error) => {
+            console.error("Error writing document: ", error);
+            res.json({ deviceToken: token })
+            res.end()
+        });;
+
+});
+
 
 module.exports = router // xuat router ra cho Main.js su dung
