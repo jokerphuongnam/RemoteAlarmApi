@@ -152,7 +152,8 @@ router.post('/update', function (req, res) {
                             res.end()
                         });
                 } else { // token chua co thi khong lam gi
-                    res.json({ message: "Chua lien ket mobile token" })
+                
+                    res.status(500).json({ error: 'chua lien ket mobile' })
                     res.end()
                 }
             }).catch((error) => {
@@ -221,7 +222,7 @@ router.get('/cancel', function (req, res) {
 
 
         } else { // token chua co thi khong lam gi
-            res.json({ message: "Chua lien ket mobile token" })
+            res.status(500).json({ error: 'chua lien ket mobile' })
             res.end()
         }
     }).catch((error) => {
@@ -310,7 +311,7 @@ router.post('/new', function (req, res) {
 
 
         } else { // token chua co thi khong lam gi
-            res.json({ message: "Chua lien ket mobile token" })
+            res.status(500).json({ error: 'chua lien ket mobile' })
             res.end()
         }
     }).catch((error) => {
