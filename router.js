@@ -117,17 +117,6 @@ router.post('/update', function (req, res) {
                             "title": title
                         }
                     }
-                    // axios.post('https://fcm.googleapis.com/fcm/send', json, config)  // gui http post den mobile
-                    //     .then(resp => {
-                    //         console.log(`statusCode: ${resp.statusCode}`)
-                    //         // cap nhat data len firebase
-                          
-
-                    //     })
-                    //     .catch(error => {
-                    
-
-                    //     })
 
                     admin.messaging().send(json)
                         .then((response) => {
@@ -187,47 +176,62 @@ router.get('/cancel', function (req, res) {
     // tuong tu o tren, chuan bi data gui thong bao den mobile
     // roi cap nhat database tren firebase
     res.setHeader('Content-Type', 'application/json');
-
     let aid = req.query.aid
     let uid = req.query.uid
-    let json = {
-        "to": "/topics/remoteAlarm",
-        "data": {
-            "alarmId": aid,
-            "type": "cancel"
-        },
-        "priority": "high"
-    }
 
-    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
-        if (doc.exists) {
-            console.log("Document data:", doc.data());
+    var docRef = admin.firestore().collection("user").doc(uid);
+    docRef.get().then((user) => {
+        if (user.data().deviceToken != undefined) { // token ton tai
+            // khoi tao data gui thong bao den mobile
+            let json = {
+                "token": user.data().deviceToken,
+                "data": {
+                    "alarmId": aid,
+                    "type": "cancel"
+                }
+            }
 
-            axios.post('https://fcm.googleapis.com/fcm/send', json, config)
-                .then(resp => {
-                    console.log(`statusCode: ${resp.statusCode}`)
-                    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).delete().then(() => {
-                        console.log("Document successfully deleted!");
-                        res.json({ alarm_id: Number(aid) })
-                        res.end()
-                    }).catch((error) => {
-                        res.status(500).json({ error: ' khong the xoa firestore' })
-                        res.end()
-                    });
-
-                })
-                .catch(error => {
-                    res.status(500).json({ error: 'khong the gui den mobile' })
+            admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).get().then((doc) => {
+                if (doc.exists) {
+                    // console.log("Document data:", doc.data());
+                    admin.messaging().send(json)
+                        .then((response) => {
+                            // Response is a message ID string.
+                            admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid).delete().then(() => {
+                                console.log("Document successfully deleted!");
+                                res.json({ alarm_id: Number(aid) })
+                                res.end()
+                            }).catch((error) => {
+                                res.status(500).json({ error: ' khong the xoa firestore' })
+                                res.end()
+                            });
+                        })
+                        .catch((error) => {
+                            console.error(error)
+                            res.status(500).json({ error: 'khong the gui den mobile' })
+                            res.end()
+                        });
+                } else {
+                    // doc.data() will be undefined in this case
+                    res.status(404).json({ error: 'khong ton tai' })
                     res.end()
-                })
+                }
+            })
 
 
-        } else {
-            // doc.data() will be undefined in this case
-            res.status(404).json({ error: 'khong ton tai' })
+
+        } else { // token chua co thi khong lam gi
+            res.json({ message: "Chua lien ket mobile token" })
             res.end()
         }
-    })
+    }).catch((error) => {
+        console.log("loi truy van user", error);
+        res.status(500).json({ error: 'khong truy van user' })
+        res.end()
+    });
+
+
+
 
 });
 
@@ -263,43 +267,59 @@ router.post('/new', function (req, res) {
     let hour = parseInt(time.substring(0, 2))
     let minute = parseInt(time.substring(3, 5))
     let title = data.title
-    let json = {
-        "to": "/topics/remoteAlarm",
-        "data": {
-            "alarmId": aid.toString(),
-            "type": "insert",
-            "hour": hour.toString(),
-            "minute": minute.toString(),
-            "title": title
-        },
-        "priority": "high"
-    }
 
 
-    // cap nhat firestore
-    admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid.toString())
-        .withConverter(Converter)
-        .set(new Alarm(aid, hour, minute, title, true, monday, tuesday, wednesday, thursday, friday, saturday, sunday, recurring)).then(() => {
-            console.log("Document successfully written!");
-            axios.post('https://fcm.googleapis.com/fcm/send', json, config) // gui den mobile http post
-                .then(resp => {
-                    console.log(`statusCode: ${resp.statusCode}`)
-                    // res.end(JSON.stringify({ alarm_id: Number(id) }))
-                    res.json({ alarm_id: Number(aid) })
-                    res.end()
+    var docRef = admin.firestore().collection("user").doc(uid);
+    docRef.get().then((user) => {
+        if (user.data().deviceToken != undefined) { // token ton tai
+            // khoi tao data gui thong bao den mobile
+            let json = {
+                "token": user.data().deviceToken,
+                "data": {
+                    "alarmId": aid.toString(),
+                    "type": "insert",
+                    "hour": hour.toString(),
+                    "minute": minute.toString(),
+                    "title": title
+                }
+            }
+            // cap nhat firestore
+            admin.firestore().collection("user").doc(uid).collection("alarms").doc(aid.toString())
+                .withConverter(Converter)
+                .set(new Alarm(aid, hour, minute, title, true, monday, tuesday, wednesday, thursday, friday, saturday, sunday, recurring)).then(() => {
+                    console.log("Document successfully written!");
+                    admin.messaging().send(json)
+                        .then((response) => {
+                            // Response is a message ID string.
+                            console.log('Successfully sent message:', response);
+                            res.json({ alarm_id: Number(aid) })
+                            res.end()
+                        })
+                        .catch((error) => {
+                            console.error(error)
+                            res.status(500).json({ error: 'khong the gui den mobile' })
+                            res.end()
+                        });
+
                 })
-                .catch(error => {
-                    console.error(error)
-                    res.status(500).json({ error: 'khong the gui den mobile' })
+                .catch((error) => {
+                    console.error("Error writing document: ", error);
+                    res.status(500).json({ error: 'khong the luu firestore' })
                     res.end()
-                })
+                });
 
-        })
-        .catch((error) => {
-            console.error("Error writing document: ", error);
-            res.status(500).json({ error: 'khong the luu firestore' })
+
+        } else { // token chua co thi khong lam gi
+            res.json({ message: "Chua lien ket mobile token" })
             res.end()
-        });
+        }
+    }).catch((error) => {
+        console.log("loi truy van user", error);
+        res.status(500).json({ error: 'khong truy van user' })
+        res.end()
+    });
+
+
 
 
 });
