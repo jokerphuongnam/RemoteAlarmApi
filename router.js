@@ -13,7 +13,7 @@ var serverKey = 'key=AAAAhO2bFYw:APA91bEzd3Rmnym3ln5nrDshVka0JuCLDnPJV7lY142_0JK
 // khoi tao firebase 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://remotealarmclock-2f98a.firebaseio.com"
+    databaseURL: "https://remotealarm-e4b87.firebaseio.com"
 });
 
 //var token = "fZgGBrzpLBA:APA91bGr1JXwvKMqXmTu6bvfzm1LgL6VKinszgq_nO7_wyN91qCiyiljqdGc9TJHki95MIvBUFYGeLHMYg39gJl2ifS4leCmx6EtwkCc1K7dvviqVDk2EptfxD6LC5o3XIwXMDbG3XjL"
@@ -47,8 +47,6 @@ router.get('/list', function (req, res) {
         res.status(500).json({ error: 'something is wrong' })
         res.end()
     });
-
-
 });
 
 
@@ -72,8 +70,6 @@ router.get('/alarmDetail', function (req, res) {
         res.status(500).json({ error: 'something is wrong' })
         res.end()
     });
-
-
 });
 
 
@@ -169,7 +165,6 @@ router.post('/update', function (req, res) {
             res.end()
         }
     })
-
 });
 
 ///////////////////////////////////////////////////////////////mapping cancel alarm
@@ -218,9 +213,6 @@ router.get('/cancel', function (req, res) {
                     res.end()
                 }
             })
-
-
-
         } else { // token chua co thi khong lam gi
             res.status(500).json({ error: 'chua lien ket mobile' })
             res.end()
@@ -230,10 +222,6 @@ router.get('/cancel', function (req, res) {
         res.status(500).json({ error: 'khong truy van user' })
         res.end()
     });
-
-
-
-
 });
 
 ////////////////////////////////////////////////////////////////mapping new alarm
@@ -308,8 +296,6 @@ router.post('/new', function (req, res) {
                     res.status(500).json({ error: 'khong the luu firestore' })
                     res.end()
                 });
-
-
         } else { // token chua co thi khong lam gi
             res.status(500).json({ error: 'chua lien ket mobile' })
             res.end()
@@ -319,10 +305,6 @@ router.post('/new', function (req, res) {
         res.status(500).json({ error: 'khong truy van user' })
         res.end()
     });
-
-
-
-
 });
 
 ////////////////////////////////////////////////////////////////mapping new alarm
@@ -347,7 +329,6 @@ router.post('/updateToken', function (req, res) {
             res.json({ deviceToken: token })
             res.end()
         });;
-
 });
 
 

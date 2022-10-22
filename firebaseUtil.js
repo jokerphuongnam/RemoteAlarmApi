@@ -1,12 +1,12 @@
 // Your web app's Firebase configuration
 var firebaseConfig = {
-    apiKey: "AIzaSyBucL9Q85YASVNA8-M4UMBvZK2tYV14zWo",
-    authDomain: "remotealarmclock-2f98a.firebaseapp.com",
-    databaseURL: "https://remotealarmclock-2f98a.firebaseio.com",
-    projectId: "remotealarmclock-2f98a",
-    storageBucket: "remotealarmclock-2f98a.appspot.com",
-    messagingSenderId: "570922046860",
-    appId: "1:570922046860:web:3b1fa8f98bb8935adcf2a9"
+    apiKey: "AIzaSyAdTWJx4WSny6ZAYBtuMF3_RpkVd-oPfsM",
+    authDomain: "remotealarm-e4b87.firebaseapp.com",
+    projectId: "remotealarm-e4b87",
+    storageBucket: "remotealarm-e4b87.appspot.com",
+    messagingSenderId: "312524311909",
+    appId: "1:312524311909:web:cf348c85d4396b21fd258c",
+    measurementId: "G-60Q09HVX3F"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -90,16 +90,16 @@ db.collection("alarms").onSnapshot(function (querySnapshot) {
 
 
 function ChuMiNga(id) {
-    
+
     var checkBox = $('#' + 's' + id);
 
     let flag = false;
     if (checkBox.is(':checked')) {
         flag = true
     }
-    
+
     setTimeout(() => {
-        
+
         var ref = db.collection("alarms").doc(id.toString());
         ref.update({
             recurring: flag
@@ -107,13 +107,13 @@ function ChuMiNga(id) {
             console.log("Document successfully updated!");
         })
             .catch(function (error) {
-    
+
                 console.error("Error updating document: ", error);
             });
 
-}, 500);
+    }, 500);
 
-    
+
 }
 
 function dateboxColor(id) {
@@ -190,7 +190,7 @@ function openUpdateForm(id) {
         if (doc.exists) {
             let data = doc.data()
             $("#updateTitle").val(data.title)
-            $("#updateTime").val(data.hour +':' +data.minute)
+            $("#updateTime").val(data.hour + ':' + data.minute)
             // nap cac check box
             $('#alarmID_mo1').prop('checked', data.monday)
             $('#alarmID_sa1').prop('checked', data.saturday)
@@ -200,7 +200,7 @@ function openUpdateForm(id) {
             $('#alarmID_th1').prop('checked', data.thursday)
             $('#alarmID_su1').prop('checked', data.sunday)
             $('#alarmId_Repeat_Inpopupform1').prop('checked', data.recurring)
-            
+
 
         } else {
             // doc.data() will be undefined in this case
